@@ -1,17 +1,49 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>TAO AI Command Center</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#10182c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="TAO AI">
+<title>TAO AI Super Machine</title>
 <style>
-body{background:#10182c;color:white;font-family:Arial;text-align:center;padding:30px}
-h1{color:#42dce8}
-button{background:#42dce8;padding:18px;border:0;border-radius:12px;font-size:18px}
+*{box-sizing:border-box}body{margin:0;padding:18px;background:#10182c;color:white;font-family:-apple-system,Arial,sans-serif}header{padding:12px 0 20px}h1{font-size:26px;color:#47dce8;margin:0}h2{font-size:17px;margin:0 0 12px}p{color:#aebed9}.panel{background:#1c2944;border:1px solid #354b70;border-radius:16px;padding:15px;margin:15px 0}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}button{border:0;border-radius:11px;padding:14px 10px;background:#304366;color:white;font-size:13px;cursor:pointer;text-align:left}.agent{border-left:5px solid var(--c);background:#273554;min-height:90px}.agent b{display:block;margin-top:7px}.quick{background:#26395b;text-align:center;min-height:65px}.primary{background:#47dce8;color:#10182c;font-weight:bold;text-align:center}input,textarea,select{width:100%;padding:13px;border:1px solid #51658b;border-radius:9px;background:#10182c;color:white;font:inherit;margin:5px 0}textarea{height:90px}.task{background:#2a3b5d;border-radius:9px;padding:10px;margin:8px 0;display:flex;justify-content:space-between;gap:8px;align-items:center}.task button{padding:8px;background:#485c80}.muted{color:#aebed9;font-size:12px}.stats{display:flex;gap:10px}.stat{flex:1;background:#2b3b5c;border-radius:10px;padding:10px;text-align:center}.stat strong{display:block;font-size:23px;color:#47dce8}.wide{width:100%}@media(min-width:850px){main{max-width:1100px;margin:auto}.agents{grid-template-columns:repeat(5,1fr)}.functions{grid-template-columns:repeat(5,1fr)}}
 </style>
 </head>
 <body>
-<h1>TAO AI SUPER MACHINE</h1>
-<p>CEO Command Center</p>
-<button onclick="location.href='https://chatgpt.com'">Launch ChatGPT</button>
+<main>
+<header><h1>✦ TAO AI SUPER MACHINE</h1><p>CEO Command Center · Interactive Edition</p></header>
+<section class="panel"><h2>◉ Command Console</h2><div class="stats"><div class="stat"><strong id="todayCount">0</strong><span class="muted">TODAY</span></div><div class="stat"><strong id="waitingCount">0</strong><span class="muted">WAITING</span></div><div class="stat"><strong id="jobCount">0</strong><span class="muted">JOBS</span></div></div><p class="muted">NEXT SINGLE MOVE</p><input id="nextMove" placeholder="Your most important next action"><button class="primary wide" onclick="saveNext()">Save Next Move</button></section>
+<section class="panel"><h2>✦ Your 10 AI Agents</h2><div id="agents" class="grid agents"></div></section>
+<section class="panel"><h2>▦ All 15 Quick Functions</h2><div id="functions" class="grid functions"></div></section>
+<section class="panel"><h2>▤ Task Management</h2><input id="taskInput" placeholder="Add a task"><select id="taskStatus"><option>TODAY</option><option>SOON</option><option>WAITING ON</option><option>IDEAS</option></select><button class="primary wide" onclick="addTask()">+ Add Task</button><div id="tasks"></div></section>
+<section class="panel"><h2>💼 Job Application Tracker</h2><input id="company" placeholder="Company"><input id="role" placeholder="Position"><button class="primary wide" onclick="addJob()">+ Add Application</button><div id="jobs"></div></section>
+<section class="panel"><h2>✓ Approval Queue</h2><input id="approvalInput" placeholder="Decision requiring approval"><button class="primary wide" onclick="addApproval()">+ Add Approval</button><div id="approvals"></div></section>
+<section class="panel"><h2>🔒 Connection Status</h2><p class="muted">ChatGPT opens separately. Gmail, Calendar, banking, and autonomous AI agents are not connected. Dashboard entries are saved locally in this browser only.</p></section>
+</main>
+<script>
+const agents=[["👑","Chief of Staff","#ffd166"],["🎯","Opportunity Hunter","#ff9066"],["📊","Business Analyst","#62b7ff"],["📚","Publishing Director","#ff80c0"],["🎨","Creative Director","#bd8aff"],["📣","Social Media Manager","#60e0d3"],["📈","Marketing & Sales","#ff718e"],["💰","Financial Operations","#72dda1"],["🔎","Research Assistant","#a2b3ff"],["⚙️","Automation Engineer","#c6e878"]];
+const functionsList=["🌅 CEO Briefing","📋 Today's Priorities","📅 Calendar","✉️ Unread Emails","↩️ Pending Replies","✅ Approvals","💼 Job Applications","📁 Active Projects","💵 Income Tracker","🎨 Create Content","🔬 Research","📝 Draft Email","⏰ Reminders","🗂️ My Documents","⚖️ Help Me Decide"];
+let state;try{state=JSON.parse(localStorage.getItem("tao-dashboard-v2"))}catch(e){}if(!state||!Array.isArray(state.tasks))state={next:"",tasks:[],jobs:[],approvals:[]};
+function save(){localStorage.setItem("tao-dashboard-v2",JSON.stringify(state));render()}
+function safe(t){return String(t).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function chat(text){location.href="https://chatgpt.com/?q="+encodeURIComponent(text)}
+function render(){document.getElementById("nextMove").value=state.next;document.getElementById("todayCount").textContent=state.tasks.filter(x=>x.status==="TODAY").length;document.getElementById("waitingCount").textContent=state.tasks.filter(x=>x.status==="WAITING ON").length;document.getElementById("jobCount").textContent=state.jobs.length;
+document.getElementById("tasks").innerHTML=state.tasks.map((x,i)=>'<div class="task"><div><b>'+safe(x.title)+'</b><div class="muted">'+safe(x.status)+'</div></div><button onclick="moveTask('+i+')">Move ↪</button></div>').join("");
+document.getElementById("jobs").innerHTML=state.jobs.map((x,i)=>'<div class="task"><div><b>'+safe(x.role)+'</b><div class="muted">'+safe(x.company)+' · '+safe(x.stage)+'</div></div><button onclick="advanceJob('+i+')">Next ↪</button></div>').join("");
+document.getElementById("approvals").innerHTML=state.approvals.map((x,i)=>'<div class="task"><div><b>'+safe(x.title)+'</b><div class="muted">'+safe(x.status)+'</div></div><button onclick="decide('+i+')">Decide</button></div>').join("")}
+function saveNext(){state.next=document.getElementById("nextMove").value;save()}
+function addTask(){let el=document.getElementById("taskInput"),v=el.value.trim();if(!v)return;state.tasks.push({title:v,status:document.getElementById("taskStatus").value});el.value="";save()}
+function moveTask(i){let statuses=["TODAY","SOON","WAITING ON","IDEAS","DONE"];let x=state.tasks[i];x.status=statuses[(statuses.indexOf(x.status)+1)%statuses.length];save()}
+function addJob(){let c=document.getElementById("company"),r=document.getElementById("role");if(!c.value.trim()||!r.value.trim())return;state.jobs.push({company:c.value.trim(),role:r.value.trim(),stage:"APPLIED"});c.value="";r.value="";save()}
+function advanceJob(i){let stages=["APPLIED","INTERVIEW","OFFER","CLOSED"];let x=state.jobs[i];x.stage=stages[(stages.indexOf(x.stage)+1)%stages.length];save()}
+function addApproval(){let e=document.getElementById("approvalInput");if(!e.value.trim())return;state.approvals.push({title:e.value.trim(),status:"PENDING"});e.value="";save()}
+function decide(i){let x=state.approvals[i],v=prompt("Type APPROVED, REJECTED, or PENDING",x.status);if(v&&["APPROVED","REJECTED","PENDING"].includes(v.toUpperCase())){x.status=v.toUpperCase();save()}}
+document.getElementById("agents").innerHTML=agents.map(a=>'<button class="agent" style="--c:'+a[2]+'" data-prompt="'+safe('Act as my TAO '+a[1]+'. Help me execute the highest priority task.')+'"><span>'+a[0]+'</span><b>'+a[1]+'</b></button>').join("");
+document.getElementById("functions").innerHTML=functionsList.map(f=>'<button class="quick" data-prompt="'+safe('Help me with '+f+' in my TAO AI Command Center. Prioritize practical execution.')+'">'+f+'</button>').join("");
+document.querySelectorAll("[data-prompt]").forEach(b=>b.addEventListener("click",()=>chat(b.dataset.prompt)));
+render();
+</script>
 </body>
 </html>
